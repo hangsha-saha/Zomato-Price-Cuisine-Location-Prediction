@@ -55,6 +55,11 @@ if submit:
         st.markdown(f"- Popular Dishes: {lst[2]}")
         st.markdown(f"- Customer Reviews: {lst[3]}")
         st.markdown(f"- Additional Insight: {lst[-1]}")
-        
+
     except Exception as e:
         st.error(f"⚠️ An error occurred: {str(e)}")
+
+    st.markdown(
+        "<p style='text-align: center; margin-top: 50px;'>&copy; 2025 The Only Needed Recommender. Created by Hangsha Saha and Ritam Hota. All rights reserved.</p>",
+        unsafe_allow_html=True
+    )

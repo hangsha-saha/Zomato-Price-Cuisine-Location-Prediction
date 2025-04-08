@@ -1,65 +1,126 @@
-import streamlit as st
-import pandas as pd
-import pickle
-from importnb import Notebook
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Only Needed Recommender</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(to bottom right, #6a11cb, #ff0099);
+            font-family: Arial, sans-serif;
+            color: white;
+            text-align: center;
+            overflow: hidden;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+            width: 45%;
+            height: 50%;
+        }
+        h1 {
+            /* font-size: 24px; */
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 5px;
+            text-align: left;
+            margin-left: 8px;
+            font-size: 18px;
+        }
+        input {
+            width: 95%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            font-size: 14px;
+            height: 25%;
+        }
+        button {
+            width: 100%;
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: linear-gradient(to right, #ff4b2b, #ff416c);
+        }
+        .myDiv{
+          height: 30%;
+        }
+        .myForm{
+          height: 100% !important;
+        }
+        .myFooter{
+          margin-top: 15px;
+        }
 
-# Importing from notebook
-with Notebook():
-    import InsightsGenerator
+        input, select {
+            width: 95%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            font-size: 14px;
+            height: 40%;
+            box-sizing: border-box;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-color: white;
+            color: #333;
+        }
 
-# Importing dictionaries
-import dictionaries
-cuidict = dictionaries.cuisinedict
-addict = dictionaries.Addressdict
-
-# Loading models
-loaded_model = pickle.load(open('MLProject.pkl', 'rb'))
-model2 = pickle.load(open('rfc_model.pkl', 'rb'))
-
-# Streamlit UI
-st.set_page_config(page_title="Zomato Cuisine & Price Predictor", layout="centered")
-st.title("🍽️ Cuisine, Price & Location Predictor")
-
-# Input form
-with st.form("prediction_form"):
-    cuisine = st.selectbox("Select a Cuisine", list(cuidict.keys()))
-    preferred_location = st.selectbox("Select a Location", list(addict.keys()))
-    price_for_one = st.number_input("Enter Price for One", min_value=1.0)
-
-    submit = st.form_submit_button("Predict")
-
-if submit:
-    try:
-        # Generate insights
-        lst1 = InsightsGenerator.main2(preferred_location, cuisine)
-        location = lst1[0]
-        cuis = lst1[1]
-
-        a = cuidict.get(cuis, 1)
-        b = addict.get(location, 1)
-
-        lst = InsightsGenerator.main(loc=preferred_location, keyword=cuisine)
-        c = lst[0]
-
-        output = loaded_model.predict([[a, b, c]])
-        out = model2.predict([[a, price_for_one, c]])[0]
-        locout = [i for i in addict if addict[i] == out]
-
-        # Display Results
-        st.subheader("🔮 Prediction Results:")
-        st.markdown(f"**Predicted Price for One:** ₹ {round(output[0], 2)}")
-        st.markdown(f"**Suggested Location:** {locout[0]}")
-        st.markdown(f"**Insights:**")
-        st.markdown(f"- Average Price: ₹ {round(lst[0], 2)}")
-        st.markdown(f"- Nearby Top-Rated Restaurants: {lst[1]}")
-        st.markdown(f"- Popular Dishes: {lst[2]}")
-        st.markdown(f"- Customer Reviews: {lst[3]}")
-        st.markdown(f"- Additional Insight: {lst[-1]}")
-
-    except Exception as e:
-        st.error(f"⚠️ An error occurred: {str(e)}")
-
-    st.markdown(
-        "<p style='text-align: center; margin-top: 50px;'>&copy; 2025 The Only Needed Recommender. Created by Hangsha Saha and Ritam Hota. All rights reserved.</p>",
-        unsafe_allow_html=True
-    }    
+    </style>
+</head>
+<body>
+    <h1>The Only Needed Recommender</h1>
+    <div class="container">
+      <form action="/predict" method="POST" class="myForm">
+        <div class="mb-4 myDiv">
+            <label for="Preferred_Location" class="form-label">Preferred Location</label>
+            <select id="Preferred_Location" name="Preferred_Location" class="form-control" required>
+                <option value="" disabled selected>Select a location</option>
+                {% for location in locations %}
+                    <option value="{{ location }}">{{ location }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-4 myDiv">
+            <label for="cuisine" class="form-label">Cuisine</label>
+            <select id="cuisine" name="cuisine" class="form-control" required>
+                <option value="" disabled selected>Select a cuisine</option>
+                {% for cuisine in cuisines %}
+                    <option value="{{ cuisine }}">{{ cuisine }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-4 myDiv">
+            <label for="price_for_one" class="form-label">Price For One</label>
+            <input type="number" step="0.01" class="form-control" id="price_for_one" name="price_for_one" placeholder="Enter price for one" required>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Predict</button>
+    </form>
+    </div>
+    <footer class="myFooter">
+      <p>&copy; 2025 The Only Needed Recommender. Created by Hangsha Saha and Ritam Hota. All rights reserved.</p>
+    </footer>
+</body>
+</html>
